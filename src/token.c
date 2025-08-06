@@ -76,7 +76,10 @@ void m_token_list_print(m_token_list *tlist) {
 	for(int i = 0; i < tlist->length; i++) {
 		printf("\t{\n");
 		printf("\t\ttype:%s\n", m_token_get_token_name(tlist->tlist[i].type));
-		printf("\t\tliteral:%s\n", tlist->tlist[i].literal->s);
+		if(tlist->tlist[i].literal == NULL)
+			printf("\t\tliteral:NULL\n");
+		else
+			printf("\t\tliteral:%s\n", tlist->tlist[i].literal->s);
 		printf("\t\tpos:(%d,%d)\n", tlist->tlist[i].pos.row, tlist->tlist[i].pos.col);
 		printf("\t},\n");
 	}

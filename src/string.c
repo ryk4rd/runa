@@ -48,8 +48,11 @@ m_string* m_string_append_str(m_string *str, char* c) {
 }
 
 void m_string_destroy(m_string *str) {
-	free(str->s);
-	free(str);
+	if(str->s != NULL)
+		free(str->s);
+
+	if(str != NULL)
+		free(str);
 }
 
 char * m_string_value(m_string *str) {
