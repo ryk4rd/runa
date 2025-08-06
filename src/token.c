@@ -19,6 +19,26 @@ const char *token_names[] = {
 
 };
 
+m_token_list *_tok_insert(m_token_list* tlist, m_token_type ttype, int i) {
+
+    m_token tok;
+    m_token_pos pos;
+
+    tok.type = ttype;
+    tok.literal = NULL;
+    tok.pos.col = i+1;
+    tok.pos.row = 1;
+    m_token_list_insert(tlist, tok);
+
+    return tlist;
+}
+
+char _tok_peek_next(m_string* s, int i) {
+    if(i+1 > s->length) //return null term if trying to access outside buf.
+        return '\0';
+    return s->s[i+1];
+}
+
 const char * m_token_get_token_name(int idx) {
     return token_names[idx];
 }
@@ -85,4 +105,82 @@ void m_token_list_print(m_token_list *tlist) {
     }
 
     printf("}\n");
+}
+
+m_token_list *m_token_scan(m_string *s) {
+    m_token_list *tlist = m_token_list_new();
+
+    for(int i = 0; i < s->length; i++) {
+        m_token tok;
+        m_token_pos pos;
+        switch (s->s[i]) {
+            case '+':
+                tlist = _tok_insert(tlist, TOK_PLUS,i);
+                break;
+
+            case '-':
+                tlist = _tok_insert(tlist, TOK_MINUS,i);
+                break;
+
+            case '*':
+                tlist = _tok_insert(tlist, TOK_STAR,i);
+                break;
+
+            case '/':
+                if(_tok_peek_next(s, i) == '/') {
+                    for(;;) {
+                        i++;
+                        if(_tok_peek_next(s, i) != '\0' || _tok_peek_next(s, '\n')) {
+                            i++;
+                            break;
+                        }
+
+                    }
+                    i++;
+                } else {
+                    tlist = _tok_insert(tlist, TOK_SLASH,i);
+                }
+                break;
+
+            case '!':
+                if(_tok_peek_next(s, i) == '=') {
+                    tlist = _tok_insert(tlist, TOK_BANG_EQUAL,i);
+                    i++;
+                }
+                else {
+                    tlist = _tok_insert(tlist, TOK_BANG,i);
+                }
+                break;
+
+            case '=':
+                if(_tok_peek_next(s, i) == '=') {
+                    tlist = _tok_insert(tlist, TOK_EQUAL_EQUAL,i);
+                    i++;
+                }
+                else {
+                    tlist = _tok_insert(tlist, TOK_EQUAL,i);
+                }
+                break;
+            case '<':
+                if(_tok_peek_next(s, i) == '=') {
+                    tlist = _tok_insert(tlist, TOK_LESS_EQUAL,i);
+                    i++;
+                }
+                else {
+                    tlist = _tok_insert(tlist, TOK_LESS, i);
+                }
+                break;
+            case '>':
+                if(_tok_peek_next(s, i) == '=') {
+                    tlist = _tok_insert(tlist, TOK_GREATER_EQUAL,i);
+                    i++;
+                }
+                else {
+                    tlist = _tok_insert(tlist, TOK_GREATER, i);
+                }
+                break;
+        }			
+    }
+
+    return tlist;
 }

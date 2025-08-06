@@ -50,4 +50,5 @@ int m_token_list_length(m_token_list *tlist);
 void m_token_list_destroy(m_token_list *tlist);
 void m_token_list_print(m_token_list *tlist);
 const char * m_token_get_token_name(int idx);
+m_token_list *m_token_scan(m_string *s);
 #endif // !TOKEN_H
