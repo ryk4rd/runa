@@ -2,9 +2,9 @@
 #define STRING_H
 
 struct m_string {
-	char *s;
-	int capacity;
-	int length;
+    char *s;
+    int capacity;
+    int length;
 };
 
 typedef struct m_string m_string;
