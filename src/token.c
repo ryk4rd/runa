@@ -1,5 +1,6 @@
 #include "token.h"
 #include "string.h"
+#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -39,13 +40,27 @@ char _tok_peek_next(m_string* s, int i) {
     return s->s[i+1];
 }
 
+int _tok_skip_comment(m_string *s, int i) {
+    if (s == NULL || s->s == NULL || i >= s->length) {
+        return i; // Return current position on invalid input
+    }
+
+    while (i < s->length && s->s[i] != '\n') {
+        i++; // Skip comment content
+    }
+    if (i < s->length) {
+        i++; // Move past newline
+    }
+    return i;
+}
+
 const char * m_token_get_token_name(int idx) {
     return token_names[idx];
 }
 
 m_token_list *m_token_list_new() {
-    m_token_list *tlist = malloc(sizeof(m_token_list));
-    tlist->tlist = malloc(sizeof(m_token)*24);
+    m_token_list *tlist = safe_malloc(sizeof(m_token_list));
+    tlist->tlist = safe_malloc(sizeof(m_token)*24);
     tlist->capacity = 24;
     tlist->length = 0;
 
@@ -55,15 +70,7 @@ m_token_list *m_token_list_new() {
 m_token_list *m_token_list_insert(m_token_list *tlist, m_token token) {
     if(tlist->length+1 >= tlist->capacity) {
         tlist->capacity *= 2;
-        m_token *tmp = realloc(tlist->tlist, tlist->capacity);
-        if (tmp == NULL) {
-            perror("could not reallocate tlist buf");
-            free(tlist->tlist);
-            free(tlist);
-            exit(EXIT_FAILURE);
-
-        }
-        tlist->tlist = tmp;
+        tlist->tlist = safe_realloc(tlist->tlist, tlist->capacity);
     }
 
     tlist->tlist[tlist->length] = token;
@@ -128,15 +135,8 @@ m_token_list *m_token_scan(m_string *s) {
 
             case '/':
                 if(_tok_peek_next(s, i) == '/') {
-                    for(;;) {
-                        i++;
-                        if(_tok_peek_next(s, i) != '\0' || _tok_peek_next(s, '\n')) {
-                            i++;
-                            break;
-                        }
-
-                    }
-                    i++;
+                    i = _tok_skip_comment(s, i);
+                    i--; // avoid skipping next char
                 } else {
                     tlist = _tok_insert(tlist, TOK_SLASH,i);
                 }

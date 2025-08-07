@@ -1,34 +1,21 @@
 #include "string.h"
+#include "util.h"
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 
-
-m_string *_m_string_realloc(m_string *str) {
-
-    char *tmp = realloc(str->s, sizeof(char)*str->capacity);
-    if(tmp == NULL) {
-        perror("could not reallocate string buffer");
-        free(str);
-        exit(EXIT_FAILURE);
-    }
-    str->s = tmp;
-    return str;	
-}
-
 m_string* m_string_new() {
-    m_string *str = malloc(sizeof(m_string));
+    m_string *str = safe_malloc(sizeof(m_string));
     str->capacity = 24;
     str->length = 0;
 
-    str->s = malloc(sizeof(char)*str->capacity);
+    str->s = safe_malloc(sizeof(char)*str->capacity);
 
     return str;
 }
 m_string* m_string_append_c(m_string *str, char c) {
     if(str->length+1 >= str->capacity) {
         str->capacity *= 2;
-        str = _m_string_realloc(str);
+        str->s = safe_realloc(str->s, sizeof(char)*str->capacity);
     }
 
     str->s[str->length] = c;
@@ -40,7 +27,7 @@ m_string* m_string_append_c(m_string *str, char c) {
 m_string* m_string_append_str(m_string *str, char* c) {
     if(str->capacity + strlen(c) + 1 >= str->capacity) {
         str->capacity = str->capacity + strlen(c);
-        str = _m_string_realloc(str);
+        str->s = safe_realloc(str->s, sizeof(char)*str->capacity);
     }
 
     strcat(str->s, c);
