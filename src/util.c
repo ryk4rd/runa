@@ -20,7 +20,6 @@ void* safe_realloc(void* ptr, size_t new_size) {
 
     if (new_ptr == NULL) {
         perror("Error: Memory reallocation failed\n");
-        free(ptr);
         return NULL;
     }
 
