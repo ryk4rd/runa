@@ -132,7 +132,7 @@ m_token_list *m_token_list_new() {
 m_token_list *m_token_list_insert(m_token_list *tlist, m_token token) {
     if(tlist->length+1 >= tlist->capacity) {
         tlist->capacity *= 2;
-        tlist->tlist = safe_realloc(tlist->tlist, tlist->capacity);
+        tlist->tlist = safe_realloc(tlist->tlist, sizeof(m_token) * tlist->capacity);
     }
 
     tlist->tlist[tlist->length] = token;
