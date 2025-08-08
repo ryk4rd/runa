@@ -37,8 +37,6 @@ void parse_args(int argc, char **argv) {
 
         m_token_list_destroy(tlist);
 
-
-        printf("%s\n", str->s);
         m_string_destroy(str);
         fclose(fp);
 
