@@ -3,8 +3,12 @@ var age = 25;
 
 var i; // not okay, cannot have empty variables
 
-
 // Some cool comments :)
 if name == "Marcus" and age == 25 {
-    print("Correct!");
+    print("My name is %name and age is %age");
+}
+
+
+while(true) {
+    print("Hello");
 }

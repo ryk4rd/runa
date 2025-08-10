@@ -183,6 +183,8 @@ m_token_list *m_token_scan(m_string *s) {
         m_token tok;
         m_token_pos pos;
         switch (s->s[i]) {
+            case ' ':
+                continue;
             case '+':
                 tlist = _tok_insert(tlist, TOK_PLUS,i, NULL);
                 break;
@@ -207,7 +209,7 @@ m_token_list *m_token_scan(m_string *s) {
                 break;
 
             case ',':
-                tlist = _tok_insert(tlist, TOK_DOT,i, NULL);
+                tlist = _tok_insert(tlist, TOK_COMMA,i, NULL);
                 break;
 
             case ';':
@@ -284,9 +286,11 @@ m_token_list *m_token_scan(m_string *s) {
                             reserved_word_found = 1;
                         }
                     }
-
                     if(reserved_word_found == 0)
                         tlist = _tok_insert(tlist, TOK_IDENTIF, i, word);
+
+                } else {
+                    fprintf(stderr, "syntax error: unknown character '%c'\n", s->s[i]);
 
                 }
                 break;
