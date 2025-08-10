@@ -1,14 +1,17 @@
-var name = "Marcus";
-var age = 25;
+import std.libc
 
-var i; // not okay, cannot have empty variables
+name = string("Marcus")
+age = float(25) // if i wanna force it to be a float?
 
 // Some cool comments :)
 if name == "Marcus" and age == 25 {
-    print("My name is %name and age is %age");
+    print("My name is {name} and age is {age}");
 }
 
 
-while(true) {
-    print("Hello");
+// Create or extend a module in std.libc.
+module std.libc {
+    def printf(s: string, ...args) -> int {
+        return __libc_printf(s, args)
+    }
 }
