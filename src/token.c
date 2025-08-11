@@ -9,18 +9,18 @@
 const char *token_names[] = {
     "TOK_LEFT_PAREN", "TOK_RIGHT_PAREN", "TOK_MINUS", "TOK_PLUS", "TOK_SLASH", "TOK_STAR",
     "TOK_DOT", "TOK_COMMA", "TOK_SEMICOLON", "TOK_BANG", "TOK_EQUAL", "TOK_GREATER", "TOK_LESS",
-    "TOK_LEFT_BRACE", "TOK_RIGHT_BRACE",
+    "TOK_LEFT_BRACE", "TOK_RIGHT_BRACE", "TOK_COLON", "TOK_ARROW",
 
 
     // Tow char tokens
     "TOK_BANG_EQUAL", "TOK_EQUAL_EQUAL", "TOK_GREATER_EQUAL", "TOK_LESS_EQUAL",
 
     // literals
-    "TOK_IDENTIF", "TOK_STRING", "TOK_NUMBER",
+    "TOK_IDENTIF", "TOK_STRLIT", "TOK_NUMBER",
 
     // Reserved keywords
     "TOK_IF", "TOK_ELSEIF", "TOK_ELSE", "TOK_RETURN", "TOK_WHILE", "TOK_AND", "TOK_OR", "TOK_TRUE", "TOK_FALSE",
-    "TOK_VAR"
+    "TOK_VAR", "TOK_INT", "TOK_FLOAT", "TOK_STRING"
 
 };
 
@@ -40,6 +40,10 @@ const struct reserved_words reserved_words[] = {
     {"or", TOK_OR},
     {"true", TOK_TRUE},
     {"false", TOK_FALSE},
+    {"int", TOK_INT},
+    {"float", TOK_INT},
+    {"string", TOK_STRING},
+
 };
 
 m_string *_consume_number(char* s, int *i) {
@@ -58,7 +62,7 @@ m_string *_consume_number(char* s, int *i) {
 m_string *_consume_word(char *s, int *i) {
     m_string *word = m_string_new();
 
-    while(isalpha(s[*i])) {
+    while(isalpha(s[*i]) || s[*i] == '_') {
         m_string_append_c(word, s[*i]);
         *i = *i+1;
     }
@@ -80,15 +84,14 @@ m_string *_consume_strlit(char* s, int *i) {
     return strlit;
 }
 
-m_token_list *_tok_insert(m_token_list* tlist, m_token_type ttype, int i, m_string *lit) {
+m_token_list *_tok_insert(m_token_list* tlist, m_token_type ttype, int i, m_string *lit, m_token_pos *pos) {
 
     m_token tok;
-    m_token_pos pos;
 
     tok.type = ttype;
     tok.literal = lit;
-    tok.pos.col = i+1;
-    tok.pos.row = 1;
+    tok.pos.col = pos->col;
+    tok.pos.row = pos->row;
     m_token_list_insert(tlist, tok);
 
     return tlist;
@@ -179,122 +182,136 @@ void m_token_list_print(m_token_list *tlist) {
 m_token_list *m_token_scan(m_string *s) {
     m_token_list *tlist = m_token_list_new();
 
+    m_token_pos pos;
+    pos.row = 1;
+    pos.col = 0;
     for(int i = 0; i < s->length; i++) {
         m_token tok;
-        m_token_pos pos;
         switch (s->s[i]) {
             case ' ':
                 continue;
             case '+':
-                tlist = _tok_insert(tlist, TOK_PLUS,i, NULL);
+                tlist = _tok_insert(tlist, TOK_PLUS,i, NULL, &pos);
                 break;
-
+            case '\n':
+                pos.row++;
+                pos.col = 0;
+                break;
             case '-':
-                tlist = _tok_insert(tlist, TOK_MINUS,i, NULL);
+                if (_tok_peek_next(s, i) == '>') {
+                    tlist = _tok_insert(tlist, TOK_ARROW,i, NULL, &pos);
+                    i++;
+                }else
+                    tlist = _tok_insert(tlist, TOK_MINUS,i, NULL, &pos);
                 break;
-
+            case ':':
+                tlist = _tok_insert(tlist, TOK_COLON,i, NULL, &pos);
+                break;
             case '*':
-                tlist = _tok_insert(tlist, TOK_STAR,i, NULL);
+                tlist = _tok_insert(tlist, TOK_STAR,i, NULL, &pos);
                 break;
 
             case '(':
-                tlist = _tok_insert(tlist, TOK_LEFT_PAREN,i, NULL);
+                tlist = _tok_insert(tlist, TOK_LEFT_PAREN,i, NULL, &pos);
                 break;
             case ')':
-                tlist = _tok_insert(tlist, TOK_RIGHT_PAREN,i, NULL);
+                tlist = _tok_insert(tlist, TOK_RIGHT_PAREN,i, NULL, &pos);
                 break;
 
             case '.':
-                tlist = _tok_insert(tlist, TOK_DOT,i, NULL);
+                tlist = _tok_insert(tlist, TOK_DOT,i, NULL, &pos);
                 break;
 
             case ',':
-                tlist = _tok_insert(tlist, TOK_COMMA,i, NULL);
+                tlist = _tok_insert(tlist, TOK_COMMA,i, NULL, &pos);
                 break;
 
             case ';':
-                tlist = _tok_insert(tlist, TOK_SEMICOLON,i, NULL);
+                tlist = _tok_insert(tlist, TOK_SEMICOLON,i, NULL, &pos);
                 break;
             case '{':
-                tlist = _tok_insert(tlist, TOK_LEFT_BRACE,i, NULL);
+                tlist = _tok_insert(tlist, TOK_LEFT_BRACE,i, NULL, &pos);
                 break;
             case '}':
-                tlist = _tok_insert(tlist, TOK_RIGHT_BRACE,i, NULL);
+                tlist = _tok_insert(tlist, TOK_RIGHT_BRACE,i, NULL, &pos);
                 break;
             case '/':
                 if(_tok_peek_next(s, i) == '/') {
                     i = _tok_skip_comment(s, i);
                     i--; // avoid skipping next char
+                    pos.row++;
+                    pos.col = 1;
                 } else {
-                    tlist = _tok_insert(tlist, TOK_SLASH,i, NULL);
+                    tlist = _tok_insert(tlist, TOK_SLASH,i, NULL, &pos);
                 }
                 break;
 
             case '!':
                 if(_tok_peek_next(s, i) == '=') {
-                    tlist = _tok_insert(tlist, TOK_BANG_EQUAL,i, NULL);
+                    tlist = _tok_insert(tlist, TOK_BANG_EQUAL,i, NULL, &pos);
                     i++;
                 }
                 else {
-                    tlist = _tok_insert(tlist, TOK_BANG,i, NULL);
+                    tlist = _tok_insert(tlist, TOK_BANG,i, NULL, &pos);
                 }
                 break;
 
             case '=':
                 if(_tok_peek_next(s, i) == '=') {
-                    tlist = _tok_insert(tlist, TOK_EQUAL_EQUAL,i, NULL);
+                    tlist = _tok_insert(tlist, TOK_EQUAL_EQUAL,i, NULL, &pos);
                     i++;
                 }
                 else {
-                    tlist = _tok_insert(tlist, TOK_EQUAL,i, NULL);
+                    tlist = _tok_insert(tlist, TOK_EQUAL,i, NULL, &pos);
                 }
                 break;
             case '<':
                 if(_tok_peek_next(s, i) == '=') {
-                    tlist = _tok_insert(tlist, TOK_LESS_EQUAL,i, NULL);
+                    tlist = _tok_insert(tlist, TOK_LESS_EQUAL,i, NULL, &pos);
                     i++;
                 }
                 else {
-                    tlist = _tok_insert(tlist, TOK_LESS, i, NULL);
+                    tlist = _tok_insert(tlist, TOK_LESS, i, NULL, &pos);
                 }
                 break;
             case '>':
                 if(_tok_peek_next(s, i) == '=') {
-                    tlist = _tok_insert(tlist, TOK_GREATER_EQUAL,i, NULL);
+                    tlist = _tok_insert(tlist, TOK_GREATER_EQUAL,i, NULL, &pos);
                     i++;
                 }
                 else {
-                    tlist = _tok_insert(tlist, TOK_GREATER, i, NULL);
+                    tlist = _tok_insert(tlist, TOK_GREATER, i, NULL, &pos);
                 }
                 break;
             case '"':
                 { // ...Why i have to do this is beyond me.
                     m_string *strlit = _consume_strlit(s->s, &i);
-                    tlist = _tok_insert(tlist, TOK_STRING, i, strlit);
+                    tlist = _tok_insert(tlist, TOK_STRLIT, i, strlit, &pos);
                 }
                 break;
             default:
                 if(isdigit(s->s[i])) {
                     m_string *num = _consume_number(s->s, &i);
-                    tlist = _tok_insert(tlist, TOK_NUMBER, i, num);
-                }else if (isalpha(s->s[i])) {
+                    tlist = _tok_insert(tlist, TOK_NUMBER, i, num, &pos);
+                }else if (isalpha(s->s[i]) || s->s[i] == '_') {
                     m_string *word = _consume_word(s->s, &i);
                     int reserved_word_found = 0;
                     for (int i = 0; i < sizeof(reserved_words) / sizeof(reserved_words[0]); i++) {
                         if(strcmp(reserved_words[i].word, word->s) == 0) {
-                            tlist = _tok_insert(tlist, reserved_words[i].type, i, word);
+                            tlist = _tok_insert(tlist, reserved_words[i].type, i, word, &pos);
                             reserved_word_found = 1;
                         }
                     }
                     if(reserved_word_found == 0)
-                        tlist = _tok_insert(tlist, TOK_IDENTIF, i, word);
+                        tlist = _tok_insert(tlist, TOK_IDENTIF, i, word, &pos);
 
                 } else {
                     fprintf(stderr, "syntax error: unknown character '%c'\n", s->s[i]);
 
                 }
                 break;
-        }			
+        }
+        pos.col++;
     }
 
     return tlist;

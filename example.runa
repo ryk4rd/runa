@@ -1,7 +1,8 @@
+//hej
 import std.libc
 
-name = string("Marcus")
-age = float(25) // if i wanna force it to be a float?
+name = Marcus
+age = 25 // if i wanna force it to be a float?
 
 // Some cool comments :)
 if name == "Marcus" and age == 25 {
