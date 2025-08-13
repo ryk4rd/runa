@@ -7,7 +7,7 @@ typedef enum {
     //Single char tokens
     TOK_LEFT_PAREN, TOK_RIGHT_PAREN, TOK_MINUS, TOK_PLUS, TOK_SLASH, TOK_STAR,
     TOK_DOT, TOK_COMMA, TOK_SEMICOLON, TOK_BANG, TOK_EQUAL, TOK_GREATER, TOK_LESS,
-    TOK_LEFT_BRACE, TOK_RIGHT_BRACE, TOK_COLON, TOK_ARROW,
+    TOK_LEFT_BRACE, TOK_RIGHT_BRACE, TOK_COLON, TOK_ARROW, TOK_ANNOTATION,
 
 
     // Tow char tokens
@@ -18,7 +18,9 @@ typedef enum {
 
     // Reserved keywords
     TOK_IF, TOK_ELSEIF, TOK_ELSE, TOK_RETURN, TOK_WHILE, TOK_AND, TOK_OR, TOK_TRUE, TOK_FALSE, TOK_VAR,
-    TOK_INT, TOK_FLOAT, TOK_STRING
+    TOK_INT, TOK_FLOAT, TOK_STRING, TOK_FROM, TOK_USE, TOK_MODULE, TOK_DEF,
+
+    TOK_ANNOTATION_CORE,
 
 } m_token_type;
 
@@ -52,5 +54,4 @@ int m_token_list_length(m_token_list *tlist);
 void m_token_list_destroy(m_token_list *tlist);
 void m_token_list_print(m_token_list *tlist);
 const char * m_token_get_token_name(int idx);
-m_token_list *m_token_scan(m_string *s);
 #endif // !TOKEN_H

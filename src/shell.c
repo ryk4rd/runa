@@ -3,6 +3,8 @@
 #include "token.h"
 #include <stdio.h>
 
+#include "tokenize.h"
+
 void spawn_shell() {
     printf("welcome to the mylang interactive shell. V 0.1\n");
     for (;;) { // Shell main loop
@@ -15,7 +17,7 @@ void spawn_shell() {
             s = m_string_append_c(s, c);
         }
 
-        m_token_list *tlist = m_token_scan(s);
+        m_token_list *tlist = m_tokenize_scan(s);
         m_token_list_print(tlist);
 
         m_token_list_destroy(tlist);

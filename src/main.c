@@ -3,6 +3,7 @@
 #include "shell.h"
 #include "string.h"
 #include "token.h"
+#include "tokenize.h"
 
 void parse_args(int argc, char **argv);
 
@@ -31,7 +32,7 @@ void parse_args(int argc, char **argv) {
             str = m_string_append_c(str, c);
         }
 
-        m_token_list *tlist = m_token_scan(str);
+        m_token_list *tlist = m_tokenize_scan(str);
 
         m_token_list_print(tlist);
 

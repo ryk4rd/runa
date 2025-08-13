@@ -2,7 +2,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -g -std=c11
 LDFLAGS =
-TARGET = runa 
+TARGET = nova
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
