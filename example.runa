@@ -1,18 +1,1 @@
-//hej
-import std.libc
-
-name = Marcus
-age = 25 // if i wanna force it to be a float?
-
-// Some cool comments :)
-if name == "Marcus" and age == 25 {
-    print("My name is {name} and age is {age}");
-}
-
-
-// Create or extend a module in std.libc.
-module std.libc {
-    def printf(s: string, ...args) -> int {
-        return __libc_printf(s, args)
-    }
-}
+1*2+3
